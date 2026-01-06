@@ -11,8 +11,6 @@ pub fn build(
     lib: *std.Build.Step.Compile,
     build_config_h: *std.Build.Step.ConfigHeader,
 ) void {
-    _ = target;
-
     const upstream = b.dependency("sdl", .{});
 
     // Add the platform specific dependency include paths
@@ -20,18 +18,22 @@ pub fn build(
     lib.addIncludePath(b.dependency("opengl", .{}).path("api"));
 
     // Link with the platform specific system libraries
-    lib.linkSystemLibrary("advapi32");
-    lib.linkSystemLibrary("gdi32");
-    lib.linkSystemLibrary("imm32");
-    lib.linkSystemLibrary("kernel32");
-    lib.linkSystemLibrary("ole32");
-    lib.linkSystemLibrary("oleaut32");
-    lib.linkSystemLibrary("setupapi");
-    lib.linkSystemLibrary("shell32");
-    lib.linkSystemLibrary("user32");
-    lib.linkSystemLibrary("uuid");
-    lib.linkSystemLibrary("version");
-    lib.linkSystemLibrary("winmm");
+    if (target.abi != .msvc) {
+        lib.linkSystemLibrary("advapi32");
+        lib.linkSystemLibrary("gdi32");
+        lib.linkSystemLibrary("imm32");
+        lib.linkSystemLibrary("kernel32");
+        lib.linkSystemLibrary("ole32");
+        lib.linkSystemLibrary("oleaut32");
+        lib.linkSystemLibrary("setupapi");
+        lib.linkSystemLibrary("shell32");
+        lib.linkSystemLibrary("user32");
+        lib.linkSystemLibrary("uuid");
+        lib.linkSystemLibrary("version");
+        lib.linkSystemLibrary("winmm");
+    } else {
+        lib.root_module.link_libc = true;
+    }
 
     // Add the platform specific sources
     lib.addCSourceFiles(.{
